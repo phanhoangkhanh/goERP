@@ -2,14 +2,17 @@ package repo_impl
 
 import (
 	"context"
+	"myERP/banana"
 	"myERP/db"
 	"myERP/model"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // work with DB so there is SQL
 type UserRepoImpl struct {
-	sql *db.Sql
+	Sql *db.Sql
 }
 
 func (u *UserRepoImpl) SaveUser(context context.Context, user model.User) (model.User, error) {
@@ -19,6 +22,18 @@ func (u *UserRepoImpl) SaveUser(context context.Context, user model.User) (model
 	user.UpdateAt = time.Now()
 
 	// NameExecContext parse user data into statement param
-	u.sql.Db.NamedExecContext(context, statement, user)
+	_, err := u.Sql.Db.NamedExecContext(context, statement, user)
+	if err != nil {
+		// check error type is postgress error ? and this is expect unique of column data
+		if err, ok := err.(*pq.Error); ok {
+			if err.Code.Name() == "unique_violation" {
+				return user, banana.UserConflict
+			}
+		}
+		//others errors , not pgError -> throw other message
+		return user, banana.SignUpFail
+	}
+	// create database ok
+	return user, nil
 
 }

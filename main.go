@@ -2,6 +2,8 @@ package main
 
 import (
 	"myERP/db"
+	"myERP/handler"
+	"myERP/repository/repo_impl"
 
 	"myERP/router"
 
@@ -36,6 +38,16 @@ func main() {
 	//ROUTING PART
 	e := echo.New()
 	router.GenerateAPICallHandler(e)
+	// call router with API object-struct with 2 param inject obj-struct ( echo + userHandler)
+	userRepoImplement := repo_impl.UserRepoImpl{Sql: sql}
+	userHandler := handler.UserHandler{
+		UserRepo: &userRepoImplement,
+	}
+	api := router.API{
+		Echo:        e,
+		UserHandler: userHandler,
+	}
+	api.SetupRouter()
 
 	// e.GET("/", handler.WelcomeEveryOne)
 

@@ -3,6 +3,7 @@ package handler
 import (
 	"myERP/model"
 	"myERP/model/req"
+	"myERP/repository"
 	"myERP/security"
 	"net/http"
 
@@ -12,6 +13,7 @@ import (
 )
 
 type UserHandler struct {
+	UserRepo repository.UserRepo
 }
 
 func (u *UserHandler) HandlerSignUp(c echo.Context) error {
@@ -49,7 +51,32 @@ func (u *UserHandler) HandlerSignUp(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	return nil
+	user := model.User{
+		UserId:   userID.String(),
+		FullName: req.FullName,
+		Email:    req.Email,
+		Password: hash,
+		Role:     role,
+		Token:    "",
+	}
+
+	//contex params is Echo
+	user, err = u.UserRepo.SaveUser(c.Request().Context(), user)
+
+	//the ERR is the modify errors package in banana.
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, model.Response{
+		StatusCode: http.StatusOK,
+		Message:    "No Error",
+		Data:       nil,
+	})
 }
 
 func (u *UserHandler) HandlerSignIn(c echo.Context) error {
