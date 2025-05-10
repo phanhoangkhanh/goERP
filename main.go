@@ -2,14 +2,15 @@ package main
 
 import (
 	"myERP/db"
-	"myERP/handler"
+
+	"myERP/router"
 
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
 
-	//Connect Pg
+	//CONNECT DATABASE - PG
 	sql := &db.Sql{
 
 		Host:     "172.21.137.52",
@@ -21,12 +22,22 @@ func main() {
 	sql.Connect()
 	defer sql.Close()
 
+	//CONNECT DATABASE TWO - PG
+	sqlTwo := &db.Sql{
+		Host:     "172.21.137.52",
+		Port:     5432,
+		UserName: "khanhadmin",
+		Password: "123",
+		DbName:   "goerp2",
+	}
+	sqlTwo.Connect()
+	defer sqlTwo.Close()
+
+	//ROUTING PART
 	e := echo.New()
+	router.GenerateAPICallHandler(e)
 
-	e.GET("/", handler.WelcomeEveryOne)
-
-	e.GET("/user/sign-in", handler.HandlerSignIn)
-	e.GET("/user/testing-response-json", handler.HandlerTestResponseObj)
+	// e.GET("/", handler.WelcomeEveryOne)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

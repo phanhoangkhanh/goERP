@@ -1,0 +1,17 @@
+development:
+  dialect: postgres
+  datasource: host=localhost port=5432 user=khanhadmin password=123 dbname=goerp sslmode=disable
+  dir: migrations
+  table: history_migrations
+
+developmentTwo:
+  dialect: postgres
+  datasource: host=localhost port=5432 user=khanhadmin password=123 dbname=goerp2 sslmode=disable
+  dir: migrationsTwo
+  table: history_migrations
+
+production:
+  dialect: postgres
+  datasource: dbname=myapp sslmode=disable
+  dir: migrations/postgres
+  table: migrations
