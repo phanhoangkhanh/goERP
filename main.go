@@ -57,4 +57,6 @@ func main() {
 	// e.GET("/", handler.WelcomeEveryOne)
 
 	e.Logger.Fatal(e.Start(":1323"))
+
+	// IAM MAIN - THE MAIN OF MAIN
 }
