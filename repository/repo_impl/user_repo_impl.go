@@ -2,6 +2,7 @@ package repo_impl
 
 import (
 	"context"
+	"fmt"
 	"myERP/banana"
 	"myERP/db"
 	"myERP/model"
@@ -16,10 +17,14 @@ type UserRepoImpl struct {
 }
 
 func (u *UserRepoImpl) SaveUser(context context.Context, user model.User) (model.User, error) {
-	statement := ` INSERT INTO user(user_id, email, password, role, full_name, created_at, updated_at)
-		VALUE(:user_id,:email, :password, :role, :full_name, :created_at, :updated_at )`
+
+	statement := `
+		INSERT INTO users(user_id, email, password, role, full_name, created_at, updated_at)
+		VALUES(:user_id, :email, :password, :role, :full_name, :created_at, :updated_at)
+	`
 	user.CreateAt = time.Now()
 	user.UpdateAt = time.Now()
+	fmt.Println("USER??", user)
 
 	// NameExecContext parse user data into statement param
 	_, err := u.Sql.Db.NamedExecContext(context, statement, user)
@@ -30,6 +35,7 @@ func (u *UserRepoImpl) SaveUser(context context.Context, user model.User) (model
 				return user, banana.UserConflict
 			}
 		}
+		fmt.Println("VÀO DEN DAY KO??")
 		//others errors , not pgError -> throw other message
 		return user, banana.SignUpFail
 	}

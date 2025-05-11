@@ -4,6 +4,7 @@ import (
 	"myERP/db"
 	"myERP/handler"
 	"myERP/repository/repo_impl"
+	"myERP/repository/test_repo_impl"
 
 	"myERP/router"
 
@@ -43,9 +44,13 @@ func main() {
 	userHandler := handler.UserHandler{
 		UserRepo: &userRepoImplement,
 	}
+	testHandler := handler.TestHandler{
+		TestRepoImp: &test_repo_impl.TestRepoImpl{Sql: sql},
+	}
 	api := router.API{
 		Echo:        e,
 		UserHandler: userHandler,
+		TestHandler: testHandler,
 	}
 	api.SetupRouter()
 

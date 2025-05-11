@@ -7,22 +7,20 @@ import (
 	"myERP/security"
 	"net/http"
 
-	validator "github.com/go-playground/validator/v10"
-	uuid "github.com/google/uuid"
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
-type UserHandler struct {
-	UserRepo repository.UserRepo
+type TestHandler struct {
+	TestRepoImp repository.TestRepo
 }
 
-func (u *UserHandler) HandlerSignUp(c echo.Context) error {
-	// request from FE with type of ReqSigUp struct
+func (testQuery *TestHandler) TestHandlerSignUp(c echo.Context) error {
 	req := req.ReqSignUp{}
 
-	//1. check Bind Parse Request + Bind request from FE to variable req
+	// 1.Bind req with model
 	if err := c.Bind(&req); err != nil {
-		//if Bind parse fail -> return Json to FE with struct response
 		return c.JSON(http.StatusBadRequest, model.Response{
 			StatusCode: http.StatusBadRequest,
 			Message:    err.Error(),
@@ -32,7 +30,6 @@ func (u *UserHandler) HandlerSignUp(c echo.Context) error {
 
 	//2. Check Validator Request
 	validate := validator.New()
-
 	if err := validate.Struct(req); err != nil {
 		return c.JSON(http.StatusBadRequest, model.Response{
 			StatusCode: http.StatusBadRequest,
@@ -41,9 +38,10 @@ func (u *UserHandler) HandlerSignUp(c echo.Context) error {
 		})
 	}
 
-	hash := security.HashAndSalt([]byte(req.Password))
-	role := model.MEMBER.StringRole()
 	userID, err := uuid.NewUUID()
+	hash := security.HashAndSalt([]byte(req.Password))
+	role := model.SUPERADMIN.StringRole()
+
 	if err != nil {
 		return c.JSON(http.StatusForbidden, model.Response{
 			StatusCode: http.StatusForbidden,
@@ -51,6 +49,7 @@ func (u *UserHandler) HandlerSignUp(c echo.Context) error {
 			Data:       nil,
 		})
 	}
+
 	user := model.User{
 		UserId:   userID.String(),
 		FullName: req.FullName,
@@ -60,40 +59,21 @@ func (u *UserHandler) HandlerSignUp(c echo.Context) error {
 		Token:    "",
 	}
 
-	//contex params is Echo
-	user, err = u.UserRepo.SaveUser(c.Request().Context(), user)
+	//Execute Repo
+	user, err = testQuery.TestRepoImp.SaveUserTest(c.Request().Context(), user)
 
-	//the ERR is the modify errors package in banana.
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
-			Message:    err.Error(),
+			Message:    "Có lỗi gì đó",
 			Data:       nil,
 		})
 	}
 
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
-		Message:    "No Error",
+		Message:    "Done- thành công rổi nhé",
 		Data:       user,
 	})
-}
 
-func (u *UserHandler) HandlerSignIn(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
-}
-
-func (u *UserHandler) HandlerTestResponseObj(c echo.Context) error {
-
-	type User struct {
-		Email string `json:"myEmail"`
-		Name  string `json:"pureName"`
-		Age   int    `json:"realAge"`
-	}
-	userTest := User{
-		Email: "phkhanh1188@gmail.com",
-		Name:  "phanhoangkhanh",
-		Age:   34,
-	}
-	return c.JSON(http.StatusOK, userTest)
 }
